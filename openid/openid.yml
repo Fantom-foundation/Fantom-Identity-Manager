@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+
+  hydra-migrate:
+    image: oryd/hydra:v1.5.1
+    command:
+      migrate sql -e --yes
+    restart: on-failure
+
+  hydra:
+    image: oryd/hydra:v1.5.1
+    ports:
+      - "4444:4444" # Public port
+      - "4445:4445" # Admin port
+      - "5555:5555" # Port for hydra token user
+    depends_on:
+      - hydra-migrate
+    command:
+      serve all --dangerous-force-http
+    environment:
+      - URLS_SELF_ISSUER=http://127.0.0.1:4444
+      - URLS_CONSENT=http://127.0.0.1:3000/consent
+      - URLS_LOGIN=http://127.0.0.1:3000/login
+      - URLS_LOGOUT=http://127.0.0.1:3000/logout
+      - DSN=memory
+      - SECRETS_SYSTEM=fantomIdentitySecret
+      - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public,pairwise
+      - OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT=fantomIdentitySalt
+    restart: unless-stopped
+
+  consent:
+    environment:
+      - HYDRA_ADMIN_URL=http://hydra:4445
+    build:
+        context: hydra-login-consent-node
+        dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
