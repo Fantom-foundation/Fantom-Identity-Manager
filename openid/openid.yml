@@ -28,13 +28,3 @@ services:
       - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public,pairwise
       - OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT=fantomIdentitySalt
     restart: unless-stopped
-
-  consent:
-    environment:
-      - HYDRA_ADMIN_URL=http://hydra:4445
-    build:
-        context: hydra-login-consent-node
-        dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
