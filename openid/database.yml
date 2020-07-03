@@ -21,6 +21,12 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
       - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
       - POSTGRES_DB=${DATABASE_DB}
+    networks:
+      - intranet
+
+networks:
+  intranet:
+    name: fantom-identity
 
 volumes:
   hydra_data:

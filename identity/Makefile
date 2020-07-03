@@ -7,26 +7,17 @@
 
 # project related vars
 PROJECT := $(shell basename "$(PWD)")
-
-# go related vars
-GOBASE := $(shell pwd)
-GOBIN=$(CURDIR)/build
-
-## build: Build identity manager
-.PHONY: build
-build:
-	cd identity-app && make build
+DOCKER_FILES := -f identity.yml
 
 ## run: Run identity manager with example variables
 .PHONY: run
 run:
-	cd identity-app && make run
-
+	docker-compose $(DOCKER_FILES) up --build --force-recreate
 
 ## clear: Clear persistent data
 .PHONY: clear
 clear:
-	cd identity-app && make clear
+	docker-compose $(DOCKER_FILES) down -v
 
 all: help
 .PHONY: help

@@ -7,7 +7,7 @@ Application is build on top of [Authboss](https://github.com/volatiletech/authbo
 
 ## Configuration
 
-Required parameters are shown in `run` operation in `Makefile`
+Required parameters are set in docker-compose `identity.yml` file.
 
 Application is configured to use in-memory store of user data.
 Users are loaded on each application run from `users.example.json`.

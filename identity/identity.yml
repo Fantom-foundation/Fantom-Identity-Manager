@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+
+  login-ui:
+    build:
+        context: identity-app
+        dockerfile: docker/Dockerfile
+    environment:
+      - COOKIE_STORE_KEY=01234567890123456789012345678901
+      - SESSION_STORE_KEY=01234567890123456789012345678901
+      - HYDRA_ADMIN_URL=http://hydra:4445
+      - PORT=3000
+      - IMPORT_USERS=users.example.json
+    ports:
+      - "3000:3000"
+    networks:
+      - intranet
+    restart: on-failure
+
+networks:
+  intranet:
+    external:
+      name: fantom-identity

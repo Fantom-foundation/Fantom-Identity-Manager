@@ -7,6 +7,8 @@ services:
     command:
       migrate sql -e --yes
     restart: on-failure
+    networks:
+      - intranet
 
   hydra:
     image: oryd/hydra:v1.5.1
@@ -29,3 +31,9 @@ services:
       - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public,pairwise
       - OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT=fantomIdentitySalt
     restart: unless-stopped
+    networks:
+      - intranet
+
+networks:
+  intranet:
+    name: fantom-identity
