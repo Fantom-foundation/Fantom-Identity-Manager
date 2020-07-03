@@ -4,14 +4,14 @@ services:
   hydra-migrate:
     environment:
       - DSN=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@hydra-postgresd:5432/${DATABASE_DB}?sslmode=disable&max_conns=20&max_idle_conns=4
-    volumes:
-      - hydra_data:/var/lib/postgresql/data
+    depends_on:
+      - "hydra-postgresd"
 
   hydra:
     environment:
       - DSN=postgres://${DATABASE_USER}:${DATABASE_PASSWORD}@hydra-postgresd:5432/${DATABASE_DB}?sslmode=disable&max_conns=20&max_idle_conns=4
-    volumes:
-      - hydra_data:/var/lib/postgresql/data
+    depends_on:
+      - "hydra-postgresd"
 
   hydra-postgresd:
     image: postgres:9.6
@@ -23,6 +23,8 @@ services:
       - POSTGRES_DB=${DATABASE_DB}
     networks:
       - intranet
+    volumes:
+        - hydra_data:/var/lib/postgresql/data
 
 networks:
   intranet:
