@@ -4,6 +4,7 @@ import (
 	"context"
 	abrenderer "github.com/volatiletech/authboss-renderer"
 	"github.com/volatiletech/authboss/defaults"
+	"identity-app/config"
 	"identity-app/db"
 	"identity-app/login"
 	"identity-app/model"
@@ -34,9 +35,7 @@ const (
 )
 
 var (
-	flagDebug    = true
-	flagDebugDB  = true
-	flagDebugCTX = true
+	cfg *config.Config
 )
 
 var (
@@ -93,6 +92,12 @@ func authbossSetup() {
 }
 
 func main() {
+	var err error
+	cfg, err = config.Load()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	cookieStore = abclientstate.NewCookieStorer([]byte(os.Getenv("COOKIE_STORE_KEY")), nil)
 	cookieStore.Secure = false
 	sessionStore = abclientstate.NewSessionStorer(sessionCookieName, []byte(os.Getenv("SESSION_STORE_KEY")), nil)
@@ -117,7 +122,7 @@ func main() {
 	if rootURL == "" {
 		rootURL = "http://localhost:" + port
 	}
-	_, err := url.Parse(rootURL)
+	_, err = url.Parse(rootURL)
 	if err != nil {
 		panic("invalid root URL passed")
 	}

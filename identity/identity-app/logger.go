@@ -12,7 +12,7 @@ func logger(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\n%s %s %s\n", r.Method, r.URL.Path, r.Proto)
 
-		if flagDebug {
+		if cfg.Debug {
 			session, err := sessionStore.Get(r, sessionCookieName)
 			if err == nil {
 				fmt.Print("Session: ")
@@ -29,14 +29,14 @@ func logger(h http.Handler) http.Handler {
 			}
 		}
 
-		if flagDebugDB {
+		if cfg.DebugDB {
 			fmt.Println("Database:")
 			for _, u := range database.Users {
 				fmt.Printf("! %#v\n", u)
 			}
 		}
 
-		if flagDebugCTX {
+		if cfg.DebugCTX {
 			if val := r.Context().Value(authboss.CTXKeyData); val != nil {
 				fmt.Printf("CTX Data: %s", spew.Sdump(val))
 			}
