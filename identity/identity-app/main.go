@@ -104,7 +104,7 @@ func main() {
 	if hydra, err = login.NewHydra(cfg); err != nil {
 		log.Fatal(err)
 	}
-	storer := db.NewMemStorer()
+	storer := db.LoadStorer(cfg)
 
 	// Capture termination signals
 	setupSignals(storer, generalLogger)
@@ -117,7 +117,7 @@ func main() {
 
 	if filename := os.Getenv("IMPORT_USERS"); filename != "" {
 		log.Printf("Importing users from file: %s\n", filename)
-		db.Import(filename, storer)
+		db.Import(filename, authboss.EnsureCanCreate(storer))
 	}
 	rootURL := cfg.RootUrl + ":" + cfg.Port
 	_, err = url.Parse(rootURL)

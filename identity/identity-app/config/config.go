@@ -15,6 +15,7 @@ const (
 	keyPort              = "net.port"
 	keyRootUrl           = "net.url"
 	keyHydraAdminUrl     = "hydra.admin-url"
+	keyDsn               = "dsn"
 )
 
 // Master application configuration
@@ -37,6 +38,8 @@ type Config struct {
 	RootUrl string
 	// Entrypoint manged by hydra server to join to
 	HydraAdminUrl string
+	// Database connection specification
+	DSN string
 }
 
 func Load() (*Config, error) {
@@ -60,6 +63,7 @@ func Load() (*Config, error) {
 		Port:              cfgReader.GetString(keyPort),
 		RootUrl:           cfgReader.GetString(keyRootUrl),
 		HydraAdminUrl:     cfgReader.GetString(keyHydraAdminUrl),
+		DSN:               cfgReader.GetString(keyDsn),
 	}, nil
 }
 

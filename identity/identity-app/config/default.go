@@ -14,4 +14,5 @@ func setDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyPort, "3000")
 	cfg.SetDefault(keyRootUrl, "http://localhost")
 	cfg.SetDefault(keyHydraAdminUrl, "http://localhosst:4445")
+	cfg.SetDefault(keyDsn, "memory")
 }

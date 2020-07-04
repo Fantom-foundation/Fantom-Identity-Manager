@@ -3,7 +3,9 @@ package db
 import (
 	"context"
 	"fmt"
+	"identity-app/config"
 	"identity-app/model"
+	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
@@ -12,7 +14,8 @@ import (
 )
 
 var (
-	assertStorer = &MemStorer{}
+	typeIdentifier = "memory"
+	assertStorer   = &MemStorer{}
 
 	_ StorerBase                       = assertStorer
 	_ authboss.CreatingServerStorer    = assertStorer
@@ -27,6 +30,12 @@ type MemStorer struct {
 	Tokens map[string][]string
 }
 
+func init() {
+	RegisterStorer(func() StorerBase {
+		return NewMemStorer()
+	})
+}
+
 // NewMemStorer constructor
 func NewMemStorer() *MemStorer {
 	return &MemStorer{
@@ -37,6 +46,15 @@ func NewMemStorer() *MemStorer {
 
 // Nothing needed to do
 func (m MemStorer) Close() {
+}
+
+func (m MemStorer) CanHandle(dsn string) bool {
+	scheme := strings.Split(dsn, "://")[0]
+	return scheme == typeIdentifier
+}
+
+func (m MemStorer) FromConfig(_ *config.Config) (StorerBase, error) {
+	return m, nil
 }
 
 // Save the user
