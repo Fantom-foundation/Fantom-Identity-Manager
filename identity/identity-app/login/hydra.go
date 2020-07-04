@@ -3,10 +3,11 @@ package login
 import (
 	"bytes"
 	"encoding/json"
+	"identity-app/config"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 )
 
@@ -18,51 +19,53 @@ const (
 	logout  flow = "logout"
 )
 
-var baseURL *url.URL
-var client *http.Client
+type Hydra struct {
+	baseURL *url.URL
+	client  *http.Client
+}
 
-func init() {
-	u, err := url.Parse(os.Getenv("HYDRA_ADMIN_URL"))
+func NewHydra(cfg *config.Config) (*Hydra, error) {
+	hydraUrl, err := url.Parse(cfg.HydraAdminUrl)
 	if err != nil {
-		panic(err)
+		log.Fatal("Unable to connect to hydra")
 	}
-
-	baseURL = u
-
-	client = &http.Client{
-		Timeout: 10 * time.Second,
-	}
+	return &Hydra{
+		baseURL: hydraUrl,
+		client: &http.Client{
+			Timeout: 10 * time.Second,
+		},
+	}, nil
 }
 
-func makeGetURL(f flow, challenge string) string {
-	return makeURL("/oauth2/auth/requests/"+string(f), f, challenge)
+func (h *Hydra) makeGetURL(f flow, challenge string) string {
+	return h.makeURL("/oauth2/auth/requests/"+string(f), f, challenge)
 }
 
-func makeAcceptURL(f flow, challenge string) string {
-	return makeURL("/oauth2/auth/requests/"+string(f)+"/accept", f, challenge)
+func (h *Hydra) makeAcceptURL(f flow, challenge string) string {
+	return h.makeURL("/oauth2/auth/requests/"+string(f)+"/accept", f, challenge)
 }
 
-func makeURL(path string, f flow, challenge string) string {
+func (h *Hydra) makeURL(path string, f flow, challenge string) string {
 	p, err := url.Parse(path)
 	if err != nil {
 		panic(err)
 	}
 
-	u := baseURL.ResolveReference(p)
+	u := h.baseURL.ResolveReference(p)
 
 	q := u.Query()
-	q.Set(getChallengeName(f), challenge)
+	q.Set(h.getChallengeName(f), challenge)
 	u.RawQuery = q.Encode()
 
 	return u.String()
 }
 
-func getChallengeName(f flow) string {
+func (h *Hydra) getChallengeName(f flow) string {
 	return string(f) + "_challenge"
 }
 
-func getJSON(url string, target interface{}) error {
-	res, err := client.Get(url)
+func (h *Hydra) getJSON(url string, target interface{}) error {
+	res, err := h.client.Get(url)
 	if err != nil {
 		return err
 	}
@@ -73,7 +76,7 @@ func getJSON(url string, target interface{}) error {
 	return json.NewDecoder(res.Body).Decode(target)
 }
 
-func putJSON(url string, body interface{}, target interface{}) error {
+func (h *Hydra) putJSON(url string, body interface{}, target interface{}) error {
 	var b io.Reader
 	if body != nil {
 		jsonBody, _ := json.Marshal(body)
@@ -81,7 +84,7 @@ func putJSON(url string, body interface{}, target interface{}) error {
 	}
 	req, _ := http.NewRequest(http.MethodPut, url, b)
 
-	res, err := client.Do(req)
+	res, err := h.client.Do(req)
 	if err != nil {
 		panic(err)
 	}

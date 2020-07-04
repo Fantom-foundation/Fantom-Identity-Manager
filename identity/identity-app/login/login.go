@@ -18,10 +18,10 @@ type Response struct {
 	Subject string `json:"subject"`
 }
 
-func initiateLogin(challenge string) Response {
+func initiateLogin(challenge string, hydra *Hydra) Response {
 	var res Response
-	url := makeGetURL(login, challenge)
-	_ = getJSON(url, &res)
+	url := hydra.makeGetURL(login, challenge)
+	_ = hydra.getJSON(url, &res)
 
 	return res
 }
@@ -30,19 +30,19 @@ type acceptLoginResponse struct {
 	RedirectTo string `json:"redirect_to"`
 }
 
-func acceptLoginRequest(w http.ResponseWriter, r *http.Request, challenge string, subject string) {
+func acceptLoginRequest(w http.ResponseWriter, r *http.Request, challenge string, subject string, hydra *Hydra) {
 	var res acceptLoginResponse
-	url := makeAcceptURL(login, challenge)
+	url := hydra.makeAcceptURL(login, challenge)
 	body := map[string]interface{}{
 		"subject": subject,
 	}
-	_ = putJSON(url, body, &res)
+	_ = hydra.putJSON(url, body, &res)
 	http.Redirect(w, r, res.RedirectTo, http.StatusFound)
 }
 
 type Middleware func(http.Handler) http.Handler
 
-func LoginMiddleware(ab *authboss.Authboss) Middleware {
+func LoginMiddleware(ab *authboss.Authboss, hydra *Hydra) Middleware {
 	return func(handler http.Handler) http.Handler {
 		ab.Events.After(authboss.EventAuth, func(w http.ResponseWriter, r *http.Request, handled bool) (bool, error) {
 			user, err := model.GetUser(ab, &r)
@@ -53,7 +53,7 @@ func LoginMiddleware(ab *authboss.Authboss) Middleware {
 			// load stored challenge
 			challenge := r.FormValue(CTXKeyChallenge)
 
-			acceptLoginRequest(w, r, challenge, user.GetArbitrary()["user_uid"])
+			acceptLoginRequest(w, r, challenge, user.GetArbitrary()["user_uid"], hydra)
 
 			return true, nil
 		})
@@ -63,12 +63,12 @@ func LoginMiddleware(ab *authboss.Authboss) Middleware {
 				switch r.Method {
 				// Show form
 				case http.MethodGet:
-					if ch := r.URL.Query().Get(getChallengeName(login)); ch != "" {
-						res := initiateLogin(ch)
+					if ch := r.URL.Query().Get(hydra.getChallengeName(login)); ch != "" {
+						res := initiateLogin(ch, hydra)
 
 						// Skip login when not needed
 						if res.Skip {
-							acceptLoginRequest(w, r, ch, res.Subject)
+							acceptLoginRequest(w, r, ch, res.Subject, hydra)
 							return
 						}
 

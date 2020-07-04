@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func RegisterMiddleware(ab *authboss.Authboss) Middleware {
+func RegisterMiddleware(ab *authboss.Authboss, hydra *Hydra) Middleware {
 	return func(handler http.Handler) http.Handler {
 		ab.Events.After(authboss.EventRegister, func(w http.ResponseWriter, r *http.Request, handled bool) (bool, error) {
 			user, err := model.GetUser(ab, &r)
@@ -19,7 +19,7 @@ func RegisterMiddleware(ab *authboss.Authboss) Middleware {
 			// load stored challenge
 			challenge := r.Context().Value(CTXKeyChallenge).(string)
 
-			acceptLoginRequest(w, r, challenge, user.GetArbitrary()["user_uid"])
+			acceptLoginRequest(w, r, challenge, user.GetArbitrary()["user_uid"], hydra)
 
 			return true, nil
 		})
@@ -29,12 +29,12 @@ func RegisterMiddleware(ab *authboss.Authboss) Middleware {
 				switch r.Method {
 				// Show form
 				case http.MethodGet:
-					if ch := r.URL.Query().Get(getChallengeName(login)); ch != "" {
-						res := initiateLogin(ch)
+					if ch := r.URL.Query().Get(hydra.getChallengeName(login)); ch != "" {
+						res := initiateLogin(ch, hydra)
 
 						// Skip login when not needed
 						if res.Skip {
-							acceptLoginRequest(w, r, ch, res.Subject)
+							acceptLoginRequest(w, r, ch, res.Subject, hydra)
 							return
 						}
 

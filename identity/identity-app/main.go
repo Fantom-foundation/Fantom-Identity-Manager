@@ -35,7 +35,8 @@ const (
 )
 
 var (
-	cfg *config.Config
+	cfg   *config.Config
+	hydra *login.Hydra
 )
 
 var (
@@ -97,10 +98,13 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if hydra, err = login.NewHydra(cfg); err != nil {
+		log.Fatal(err)
+	}
 
-	cookieStore = abclientstate.NewCookieStorer([]byte(os.Getenv("COOKIE_STORE_KEY")), nil)
+	cookieStore = abclientstate.NewCookieStorer([]byte(cfg.CookieStoreKey), nil)
 	cookieStore.Secure = false
-	sessionStore = abclientstate.NewSessionStorer(sessionCookieName, []byte(os.Getenv("SESSION_STORE_KEY")), nil)
+	sessionStore = abclientstate.NewSessionStorer(sessionCookieName, []byte(cfg.SessionStoreKey), nil)
 
 	cStore := sessionStore.Store.(*sessions.CookieStore)
 	cStore.Options.Secure = false
@@ -112,16 +116,7 @@ func main() {
 		log.Printf("Importing users from file: %s\n", filename)
 		db.Import(filename, database)
 	}
-
-	port := os.Getenv("PORT")
-	if len(port) == 0 {
-		port = "3000"
-	}
-
-	rootURL := os.Getenv("ROOT_URL")
-	if rootURL == "" {
-		rootURL = "http://localhost:" + port
-	}
+	rootURL := cfg.RootUrl + ":" + cfg.Port
 	_, err = url.Parse(rootURL)
 	if err != nil {
 		panic("invalid root URL passed")
@@ -146,19 +141,19 @@ func main() {
 
 	mux.Route(ab.Config.Paths.Mount, func(mux chi.Router) {
 		mws := chi.Chain(
-			login.LoginMiddleware(ab),
-			login.LogoutMiddleware(ab),
-			login.RegisterMiddleware(ab),
+			login.LoginMiddleware(ab, hydra),
+			login.LogoutMiddleware(ab, hydra),
+			login.RegisterMiddleware(ab, hydra),
 		)
 		mux.Mount("/", http.StripPrefix(ab.Config.Paths.Mount, mws.Handler(ab.Config.Core.Router)))
-		mux.Mount("/consent", login.Consent(ab))
+		mux.Mount("/consent", login.Consent(ab, hydra))
 
 		fs := http.FileServer(http.Dir("static"))
 		mux.Mount("/static/", http.StripPrefix(ab.Config.Paths.Mount+"/static/", fs))
 	})
 
-	log.Printf("Listening on port %s", port)
-	log.Println(http.ListenAndServe(":"+port, mux))
+	log.Printf("Listening on port %s", cfg.Port)
+	log.Println(http.ListenAndServe(":"+cfg.Port, mux))
 }
 
 func dataInjector(handler http.Handler) http.Handler {

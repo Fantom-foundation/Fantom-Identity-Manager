@@ -6,9 +6,14 @@ import (
 
 // Config reader keys
 const (
-	keyDebug    = "debug.general"
-	keyDebugDB  = "debug.db"
-	keyDebugCTX = "debug.ctx"
+	keyDebug           = "debug.general"
+	keyDebugDB         = "debug.db"
+	keyDebugCTX        = "debug.ctx"
+	keyCookieStoreKey  = "storekey.cookie"
+	keySessionStoreKey = "storekey.session"
+	keyPort            = "net.port"
+	keyRootUrl         = "net.url"
+	keyHydraAdminUrl   = "hydra.admin-url"
 )
 
 // Master application configuration
@@ -19,11 +24,22 @@ type Config struct {
 	DebugDB bool
 	// Debug operation context
 	DebugCTX bool
+	// Encrypted cookie key
+	CookieStoreKey string
+	// Encrypted session
+	SessionStoreKey string
+	// User facing port
+	Port string
+	// User facing address
+	RootUrl string
+	// Entrypoit manged by hydra server to join to
+	HydraAdminUrl string
 }
 
 func Load() (*Config, error) {
 	// Initialize reader
 	cfgReader := getReader()
+	setDefaults(cfgReader)
 
 	// Load each source of configuration
 	if err := loadEnv(cfgReader); err != nil {
@@ -32,12 +48,17 @@ func Load() (*Config, error) {
 
 	// Build final configuration
 	return &Config{
-		Debug:    cfgReader.GetBool(keyDebug),
-		DebugDB:  cfgReader.GetBool(keyDebugDB),
-		DebugCTX: cfgReader.GetBool(keyDebugCTX),
+		Debug:           cfgReader.GetBool(keyDebug),
+		DebugDB:         cfgReader.GetBool(keyDebugDB),
+		DebugCTX:        cfgReader.GetBool(keyDebugCTX),
+		CookieStoreKey:  cfgReader.GetString(keyCookieStoreKey),
+		SessionStoreKey: cfgReader.GetString(keySessionStoreKey),
+		Port:            cfgReader.GetString(keyPort),
+		RootUrl:         cfgReader.GetString(keyRootUrl),
+		HydraAdminUrl:   cfgReader.GetString(keyHydraAdminUrl),
 	}, nil
 }
 
 func getReader() *viper.Viper {
-	return viper.New()
+	return viper.New() // Default reader
 }

@@ -14,10 +14,10 @@ type consentResponse struct {
 	RequestedAccessTokenAudience []string `json:"requested_access_token_audience"`
 }
 
-func initiateConsent(challenge string) consentResponse {
+func initiateConsent(challenge string, hydra *Hydra) consentResponse {
 	var res consentResponse
-	url := makeGetURL(consent, challenge)
-	_ = getJSON(url, &res)
+	url := hydra.makeGetURL(consent, challenge)
+	_ = hydra.getJSON(url, &res)
 
 	return res
 }
@@ -26,9 +26,9 @@ type acceptConsentResponse struct {
 	RedirectTo string `json:"redirect_to"`
 }
 
-func acceptConsentRequest(w http.ResponseWriter, r *http.Request, challenge string, getRes consentResponse, user *model.User) {
+func acceptConsentRequest(w http.ResponseWriter, r *http.Request, challenge string, getRes consentResponse, user *model.User, hydra *Hydra) {
 	var res acceptConsentResponse
-	url := makeAcceptURL(consent, challenge)
+	url := hydra.makeAcceptURL(consent, challenge)
 	var idToken = IDToken{
 		Uid:  user.UserUid,
 		Name: user.Name,
@@ -40,7 +40,7 @@ func acceptConsentRequest(w http.ResponseWriter, r *http.Request, challenge stri
 			"id_token": idToken,
 		},
 	}
-	_ = putJSON(url, body, &res)
+	_ = hydra.putJSON(url, body, &res)
 	http.Redirect(w, r, res.RedirectTo, http.StatusFound)
 }
 
@@ -49,15 +49,15 @@ type IDToken struct {
 	Name string `json:"name"`
 }
 
-func Consent(ab *authboss.Authboss) http.Handler {
+func Consent(ab *authboss.Authboss, hydra *Hydra) http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		if ch := r.URL.Query().Get(getChallengeName(consent)); ch != "" {
+		if ch := r.URL.Query().Get(hydra.getChallengeName(consent)); ch != "" {
 			// Auto consent to every request
-			getRes := initiateConsent(ch)
+			getRes := initiateConsent(ch, hydra)
 			if user, err := model.GetUser(ab, &r); err == nil {
-				acceptConsentRequest(w, r, ch, getRes, user)
+				acceptConsentRequest(w, r, ch, getRes, user, hydra)
 			}
 		}
 	})
