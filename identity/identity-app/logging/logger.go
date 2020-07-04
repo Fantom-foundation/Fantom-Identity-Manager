@@ -7,16 +7,20 @@ import (
 	"net/http"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/op/go-logging"
 	"github.com/volatiletech/authboss"
 )
 
 type Logger struct {
+	Logger       logging.Logger
 	cfg          *config.Config
 	sessionStore *abclientstate.SessionStorer
 }
 
 func NewLogger(cfg *config.Config, sessionStore *abclientstate.SessionStorer) *Logger {
+	logger := logging.MustGetLogger("identity")
 	return &Logger{
+		Logger:       *logger,
 		cfg:          cfg,
 		sessionStore: sessionStore,
 	}
