@@ -6,6 +6,7 @@ import (
 	"github.com/volatiletech/authboss/defaults"
 	"identity-app/config"
 	"identity-app/db"
+	"identity-app/logging"
 	"identity-app/login"
 	"identity-app/model"
 	"log"
@@ -31,8 +32,9 @@ import (
 )
 
 var (
-	cfg   *config.Config
-	hydra *login.Hydra
+	cfg           *config.Config
+	hydra         *login.Hydra
+	generalLogger *logging.Logger
 )
 
 var (
@@ -94,13 +96,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if hydra, err = login.NewHydra(cfg); err != nil {
-		log.Fatal(err)
-	}
 
 	cookieStore = abclientstate.NewCookieStorer([]byte(cfg.CookieStoreKey), nil)
 	cookieStore.Secure = false
 	sessionStore = abclientstate.NewSessionStorer(cfg.SessionCookieName, []byte(cfg.SessionStoreKey), nil)
+
+	generalLogger = logging.NewLogger(cfg, &sessionStore)
+	if hydra, err = login.NewHydra(cfg); err != nil {
+		log.Fatal(err)
+	}
 
 	cStore := sessionStore.Store.(*sessions.CookieStore)
 	cStore.Options.Secure = false
@@ -128,7 +132,7 @@ func main() {
 
 	mux := chi.NewRouter()
 
-	mux.Use(logger,
+	mux.Use(generalLogger.RequestLogger,
 		nosurf.NewPure,
 		ab.LoadClientStateMiddleware,
 		dataInjector,

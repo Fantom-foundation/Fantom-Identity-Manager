@@ -1,19 +1,33 @@
-package main
+package logging
 
 import (
 	"fmt"
+	abclientstate "github.com/volatiletech/authboss-clientstate"
+	"identity-app/config"
 	"net/http"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/volatiletech/authboss"
 )
 
-func logger(h http.Handler) http.Handler {
+type Logger struct {
+	cfg          *config.Config
+	sessionStore *abclientstate.SessionStorer
+}
+
+func NewLogger(cfg *config.Config, sessionStore *abclientstate.SessionStorer) *Logger {
+	return &Logger{
+		cfg:          cfg,
+		sessionStore: sessionStore,
+	}
+}
+
+func (logger *Logger) RequestLogger(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("\n%s %s %s\n", r.Method, r.URL.Path, r.Proto)
 
-		if cfg.Debug {
-			session, err := sessionStore.Get(r, cfg.SessionCookieName)
+		if logger.cfg.Debug {
+			session, err := logger.sessionStore.Get(r, logger.cfg.SessionCookieName)
 			if err == nil {
 				fmt.Print("Session: ")
 				first := true
@@ -29,14 +43,7 @@ func logger(h http.Handler) http.Handler {
 			}
 		}
 
-		if cfg.DebugDB {
-			fmt.Println("Database:")
-			for _, u := range database.Users {
-				fmt.Printf("! %#v\n", u)
-			}
-		}
-
-		if cfg.DebugCTX {
+		if logger.cfg.DebugCTX {
 			if val := r.Context().Value(authboss.CTXKeyData); val != nil {
 				fmt.Printf("CTX Data: %s", spew.Sdump(val))
 			}
