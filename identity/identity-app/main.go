@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"regexp"
 	"time"
 
@@ -106,6 +107,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Capture termination signals
+	setupSignals(generalLogger)
+
 	cStore := sessionStore.Store.(*sessions.CookieStore)
 	cStore.Options.Secure = false
 	cStore.MaxAge(int((7 * 24 * time.Hour) / time.Second))
@@ -184,4 +188,21 @@ func layoutData(w http.ResponseWriter, r **http.Request) authboss.HTMLData {
 		"flash_success":     authboss.FlashSuccess(w, *r),
 		"flash_error":       authboss.FlashError(w, *r),
 	}
+}
+
+// Creates a system signal listener and handles graceful termination upon receiving one.
+func setupSignals(log *logging.Logger) {
+	ts := make(chan os.Signal, 2)
+	signal.Notify(ts, os.Interrupt, os.Kill)
+
+	// start monitoring
+	go func() {
+		// wait for the signal
+		<-ts
+
+		// log nad close
+		log.Logger.Info("server is terminating")
+
+		os.Exit(0)
+	}()
 }
