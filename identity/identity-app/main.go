@@ -36,19 +36,17 @@ var (
 	cfg           *config.Config
 	hydra         *login.Hydra
 	generalLogger *logging.Logger
+	sessionStore  abclientstate.SessionStorer
+	cookieStore   abclientstate.CookieStorer
 )
 
 var (
 	ab        = authboss.New()
-	database  = db.NewMemStorer()
 	schemaDec = schema.NewDecoder()
-
-	sessionStore abclientstate.SessionStorer
-	cookieStore  abclientstate.CookieStorer
 )
 
-func authbossSetup() {
-	ab.Config.Storage.Server = database
+func authbossSetup(storer authboss.ServerStorer) {
+	ab.Config.Storage.Server = storer
 	ab.Config.Storage.SessionState = sessionStore
 	ab.Config.Storage.CookieState = cookieStore
 
@@ -106,19 +104,20 @@ func main() {
 	if hydra, err = login.NewHydra(cfg); err != nil {
 		log.Fatal(err)
 	}
+	storer := db.NewMemStorer()
 
 	// Capture termination signals
-	setupSignals(generalLogger)
+	setupSignals(storer, generalLogger)
 
 	cStore := sessionStore.Store.(*sessions.CookieStore)
 	cStore.Options.Secure = false
 	cStore.MaxAge(int((7 * 24 * time.Hour) / time.Second))
 
-	authbossSetup()
+	authbossSetup(storer)
 
 	if filename := os.Getenv("IMPORT_USERS"); filename != "" {
 		log.Printf("Importing users from file: %s\n", filename)
-		db.Import(filename, database)
+		db.Import(filename, storer)
 	}
 	rootURL := cfg.RootUrl + ":" + cfg.Port
 	_, err = url.Parse(rootURL)
@@ -191,7 +190,7 @@ func layoutData(w http.ResponseWriter, r **http.Request) authboss.HTMLData {
 }
 
 // Creates a system signal listener and handles graceful termination upon receiving one.
-func setupSignals(log *logging.Logger) {
+func setupSignals(db db.StorerBase, log *logging.Logger) {
 	ts := make(chan os.Signal, 2)
 	signal.Notify(ts, os.Interrupt, os.Kill)
 
@@ -202,6 +201,7 @@ func setupSignals(log *logging.Logger) {
 
 		// log nad close
 		log.Logger.Info("server is terminating")
+		db.Close()
 
 		os.Exit(0)
 	}()

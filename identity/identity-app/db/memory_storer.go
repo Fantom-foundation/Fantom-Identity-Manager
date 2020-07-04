@@ -14,6 +14,7 @@ import (
 var (
 	assertStorer = &MemStorer{}
 
+	_ StorerBase                       = assertStorer
 	_ authboss.CreatingServerStorer    = assertStorer
 	_ authboss.ConfirmingServerStorer  = assertStorer
 	_ authboss.RecoveringServerStorer  = assertStorer
@@ -32,6 +33,10 @@ func NewMemStorer() *MemStorer {
 		Users:  map[string]model.User{},
 		Tokens: make(map[string][]string),
 	}
+}
+
+// Nothing needed to do
+func (m MemStorer) Close() {
 }
 
 // Save the user
