@@ -6,14 +6,15 @@ import (
 
 func getParameterNameMapping() map[string]string {
 	return map[string]string{
-		"DEBUG":             keyDebug,
-		"DEBUG_DB":          keyDebugDB,
-		"DEBUG_CTX":         keyDebugCTX,
-		"COOKIE_STORE_KEY":  keyCookieStoreKey,
-		"SESSION_STORE_KEY": keySessionStoreKey,
-		"PORT":              keyPort,
-		"ROOT_URL":          keyRootUrl,
-		"HYDRA_ADMIN_URL":   keyHydraAdminUrl,
+		"DEBUG":               keyDebug,
+		"DEBUG_DB":            keyDebugDB,
+		"DEBUG_CTX":           keyDebugCTX,
+		"COOKIE_STORE_KEY":    keyCookieStoreKey,
+		"SESSION_STORE_KEY":   keySessionStoreKey,
+		"SESSION_COOKIE_NAME": keySessionCookieName,
+		"PORT":                keyPort,
+		"ROOT_URL":            keyRootUrl,
+		"HYDRA_ADMIN_URL":     keyHydraAdminUrl,
 	}
 }
 

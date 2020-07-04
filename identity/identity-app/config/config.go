@@ -6,14 +6,15 @@ import (
 
 // Config reader keys
 const (
-	keyDebug           = "debug.general"
-	keyDebugDB         = "debug.db"
-	keyDebugCTX        = "debug.ctx"
-	keyCookieStoreKey  = "storekey.cookie"
-	keySessionStoreKey = "storekey.session"
-	keyPort            = "net.port"
-	keyRootUrl         = "net.url"
-	keyHydraAdminUrl   = "hydra.admin-url"
+	keyDebug             = "debug.general"
+	keyDebugDB           = "debug.db"
+	keyDebugCTX          = "debug.ctx"
+	keyCookieStoreKey    = "storekey.cookie"
+	keySessionStoreKey   = "storekey.session"
+	keySessionCookieName = "storekey.sessionname"
+	keyPort              = "net.port"
+	keyRootUrl           = "net.url"
+	keyHydraAdminUrl     = "hydra.admin-url"
 )
 
 // Master application configuration
@@ -28,11 +29,13 @@ type Config struct {
 	CookieStoreKey string
 	// Encrypted session
 	SessionStoreKey string
+	// Session specification
+	SessionCookieName string
 	// User facing port
 	Port string
 	// User facing address
 	RootUrl string
-	// Entrypoit manged by hydra server to join to
+	// Entrypoint manged by hydra server to join to
 	HydraAdminUrl string
 }
 
@@ -48,14 +51,15 @@ func Load() (*Config, error) {
 
 	// Build final configuration
 	return &Config{
-		Debug:           cfgReader.GetBool(keyDebug),
-		DebugDB:         cfgReader.GetBool(keyDebugDB),
-		DebugCTX:        cfgReader.GetBool(keyDebugCTX),
-		CookieStoreKey:  cfgReader.GetString(keyCookieStoreKey),
-		SessionStoreKey: cfgReader.GetString(keySessionStoreKey),
-		Port:            cfgReader.GetString(keyPort),
-		RootUrl:         cfgReader.GetString(keyRootUrl),
-		HydraAdminUrl:   cfgReader.GetString(keyHydraAdminUrl),
+		Debug:             cfgReader.GetBool(keyDebug),
+		DebugDB:           cfgReader.GetBool(keyDebugDB),
+		DebugCTX:          cfgReader.GetBool(keyDebugCTX),
+		CookieStoreKey:    cfgReader.GetString(keyCookieStoreKey),
+		SessionStoreKey:   cfgReader.GetString(keySessionStoreKey),
+		SessionCookieName: cfgReader.GetString(keySessionStoreKey),
+		Port:              cfgReader.GetString(keyPort),
+		RootUrl:           cfgReader.GetString(keyRootUrl),
+		HydraAdminUrl:     cfgReader.GetString(keyHydraAdminUrl),
 	}, nil
 }
 

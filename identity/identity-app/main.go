@@ -30,10 +30,6 @@ import (
 	_ "github.com/volatiletech/authboss/register"
 )
 
-const (
-	sessionCookieName = "fantomX"
-)
-
 var (
 	cfg   *config.Config
 	hydra *login.Hydra
@@ -104,7 +100,7 @@ func main() {
 
 	cookieStore = abclientstate.NewCookieStorer([]byte(cfg.CookieStoreKey), nil)
 	cookieStore.Secure = false
-	sessionStore = abclientstate.NewSessionStorer(sessionCookieName, []byte(cfg.SessionStoreKey), nil)
+	sessionStore = abclientstate.NewSessionStorer(cfg.SessionCookieName, []byte(cfg.SessionStoreKey), nil)
 
 	cStore := sessionStore.Store.(*sessions.CookieStore)
 	cStore.Options.Secure = false

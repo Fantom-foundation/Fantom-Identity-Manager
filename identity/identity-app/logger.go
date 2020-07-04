@@ -13,7 +13,7 @@ func logger(h http.Handler) http.Handler {
 		fmt.Printf("\n%s %s %s\n", r.Method, r.URL.Path, r.Proto)
 
 		if cfg.Debug {
-			session, err := sessionStore.Get(r, sessionCookieName)
+			session, err := sessionStore.Get(r, cfg.SessionCookieName)
 			if err == nil {
 				fmt.Print("Session: ")
 				first := true
