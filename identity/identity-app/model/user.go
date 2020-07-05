@@ -11,16 +11,14 @@ import (
 
 // User struct for authboss
 type User struct {
-	ID int
-
 	// Non-authboss related field
-	UserUid string
-	Name    string
+	UserUid string `json:"_id" bson:"_id,omitempty"`
+	Name    string `json:"name" bson:"name,omitempty"`
 
 	// Auth
-	Username string
-	Email    string
-	Password string
+	Username string `json:"username" bson:"username,omitempty"`
+	Email    string `json:"email" bson:"email,omitempty"`
+	Password string `json:"password" bson:"password,omitempty"`
 
 	// Confirm
 	ConfirmSelector string

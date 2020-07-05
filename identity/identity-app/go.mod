@@ -10,7 +10,6 @@ require (
 	github.com/justinas/nosurf v1.1.0
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
-	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.2.0 // indirect
 	github.com/satori/go.uuid v1.2.0
@@ -18,6 +17,7 @@ require (
 	github.com/volatiletech/authboss v2.4.1+incompatible
 	github.com/volatiletech/authboss-clientstate v0.0.0-20190912194043-b5b6e0f4355e
 	github.com/volatiletech/authboss-renderer v0.0.0-20191129003553-2fd7168ab508
+	go.mongodb.org/mongo-driver v1.3.4
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
