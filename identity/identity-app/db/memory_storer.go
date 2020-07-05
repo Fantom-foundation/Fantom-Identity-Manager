@@ -13,15 +13,18 @@ import (
 	aboauth "github.com/volatiletech/authboss/oauth2"
 )
 
-var (
-	typeIdentifier = "memory"
-	assertStorer   = &MemStorer{}
+const (
+	memoryStorerIdentifier = "memory"
+)
 
-	_ StorerBase                       = assertStorer
-	_ authboss.CreatingServerStorer    = assertStorer
-	_ authboss.ConfirmingServerStorer  = assertStorer
-	_ authboss.RecoveringServerStorer  = assertStorer
-	_ authboss.RememberingServerStorer = assertStorer
+var (
+	memoryStorer = &MemStorer{}
+
+	_ StorerBase                       = memoryStorer
+	_ authboss.CreatingServerStorer    = memoryStorer
+	_ authboss.ConfirmingServerStorer  = memoryStorer
+	_ authboss.RecoveringServerStorer  = memoryStorer
+	_ authboss.RememberingServerStorer = memoryStorer
 )
 
 // MemStorer stores users in memory
@@ -45,33 +48,33 @@ func NewMemStorer() *MemStorer {
 }
 
 // Nothing needed to do
-func (m MemStorer) Close() {
+func (storer *MemStorer) Close() {
 }
 
-func (m MemStorer) CanHandle(dsn string) bool {
+func (storer *MemStorer) CanHandle(dsn string) bool {
 	scheme := strings.Split(dsn, "://")[0]
-	return scheme == typeIdentifier
+	return scheme == memoryStorerIdentifier
 }
 
-func (m MemStorer) FromConfig(_ *config.Config) (StorerBase, error) {
-	return m, nil
+func (storer *MemStorer) FromConfig(_ *config.Config) (StorerBase, error) {
+	return storer, nil
 }
 
 // Save the user
-func (m MemStorer) Save(_ context.Context, user authboss.User) error {
+func (storer MemStorer) Save(_ context.Context, user authboss.User) error {
 	u := user.(*model.User)
-	m.Users[u.Email] = *u
+	storer.Users[u.Email] = *u
 
 	fmt.Println("Saved user:", u.Name)
 	return nil
 }
 
 // Load the user
-func (m MemStorer) Load(_ context.Context, key string) (user authboss.User, err error) {
+func (storer MemStorer) Load(_ context.Context, key string) (user authboss.User, err error) {
 	// Check to see if our key is actually an oauth2 pid
 	provider, uid, err := authboss.ParseOAuth2PID(key)
 	if err == nil {
-		for _, u := range m.Users {
+		for _, u := range storer.Users {
 			if u.OAuth2Provider == provider && u.OAuth2UID == uid {
 				fmt.Println("Loaded OAuth2 user:", u.Email)
 				return &u, nil
@@ -81,7 +84,7 @@ func (m MemStorer) Load(_ context.Context, key string) (user authboss.User, err 
 		return nil, authboss.ErrUserNotFound
 	}
 
-	u, ok := m.Users[key]
+	u, ok := storer.Users[key]
 	if !ok {
 		return nil, authboss.ErrUserNotFound
 	}
@@ -91,26 +94,26 @@ func (m MemStorer) Load(_ context.Context, key string) (user authboss.User, err 
 }
 
 // New user creation
-func (m MemStorer) New(_ context.Context) authboss.User {
+func (storer MemStorer) New(_ context.Context) authboss.User {
 	return &model.User{}
 }
 
 // Create the user
-func (m MemStorer) Create(_ context.Context, user authboss.User) error {
+func (storer MemStorer) Create(_ context.Context, user authboss.User) error {
 	u := user.(*model.User)
 
-	if _, ok := m.Users[u.Email]; ok {
+	if _, ok := storer.Users[u.Email]; ok {
 		return authboss.ErrUserFound
 	}
 
 	fmt.Println("Created new user:", u.Name)
-	m.Users[u.Email] = *u
+	storer.Users[u.Email] = *u
 	return nil
 }
 
 // LoadByConfirmSelector looks a user up by confirmation token
-func (m MemStorer) LoadByConfirmSelector(_ context.Context, selector string) (user authboss.ConfirmableUser, err error) {
-	for _, v := range m.Users {
+func (storer MemStorer) LoadByConfirmSelector(_ context.Context, selector string) (user authboss.ConfirmableUser, err error) {
+	for _, v := range storer.Users {
 		if v.ConfirmSelector == selector {
 			fmt.Println("Loaded user by confirm selector:", selector, v.Name)
 			return &v, nil
@@ -121,8 +124,8 @@ func (m MemStorer) LoadByConfirmSelector(_ context.Context, selector string) (us
 }
 
 // LoadByRecoverSelector looks a user up by confirmation selector
-func (m MemStorer) LoadByRecoverSelector(_ context.Context, selector string) (user authboss.RecoverableUser, err error) {
-	for _, v := range m.Users {
+func (storer MemStorer) LoadByRecoverSelector(_ context.Context, selector string) (user authboss.RecoverableUser, err error) {
+	for _, v := range storer.Users {
 		if v.RecoverSelector == selector {
 			fmt.Println("Loaded user by recover selector:", selector, v.Name)
 			return &v, nil
@@ -133,25 +136,25 @@ func (m MemStorer) LoadByRecoverSelector(_ context.Context, selector string) (us
 }
 
 // AddRememberToken to a user
-func (m MemStorer) AddRememberToken(_ context.Context, pid, token string) error {
-	m.Tokens[pid] = append(m.Tokens[pid], token)
+func (storer MemStorer) AddRememberToken(_ context.Context, pid, token string) error {
+	storer.Tokens[pid] = append(storer.Tokens[pid], token)
 	fmt.Printf("Adding rm token to %s: %s\n", pid, token)
-	spew.Dump(m.Tokens)
+	spew.Dump(storer.Tokens)
 	return nil
 }
 
 // DelRememberTokens removes all tokens for the given pid
-func (m MemStorer) DelRememberTokens(_ context.Context, pid string) error {
-	delete(m.Tokens, pid)
+func (storer MemStorer) DelRememberTokens(_ context.Context, pid string) error {
+	delete(storer.Tokens, pid)
 	fmt.Println("Deleting rm tokens from:", pid)
-	spew.Dump(m.Tokens)
+	spew.Dump(storer.Tokens)
 	return nil
 }
 
 // UseRememberToken finds the pid-token pair and deletes it.
 // If the token could not be found return ErrTokenNotFound
-func (m MemStorer) UseRememberToken(_ context.Context, pid, token string) error {
-	tokens, ok := m.Tokens[pid]
+func (storer MemStorer) UseRememberToken(_ context.Context, pid, token string) error {
+	tokens, ok := storer.Tokens[pid]
 	if !ok {
 		fmt.Println("Failed to find rm tokens for:", pid)
 		return authboss.ErrTokenNotFound
@@ -160,7 +163,7 @@ func (m MemStorer) UseRememberToken(_ context.Context, pid, token string) error 
 	for i, tok := range tokens {
 		if tok == token {
 			tokens[len(tokens)-1] = tokens[i]
-			m.Tokens[pid] = tokens[:len(tokens)-1]
+			storer.Tokens[pid] = tokens[:len(tokens)-1]
 			fmt.Printf("Used remember for %s: %s\n", pid, token)
 			return nil
 		}
@@ -170,13 +173,13 @@ func (m MemStorer) UseRememberToken(_ context.Context, pid, token string) error 
 }
 
 // NewFromOAuth2 creates an oauth2 user (but not in the database, just a blank one to be saved later)
-func (m MemStorer) NewFromOAuth2(_ context.Context, provider string, details map[string]string) (authboss.OAuth2User, error) {
+func (storer MemStorer) NewFromOAuth2(_ context.Context, provider string, details map[string]string) (authboss.OAuth2User, error) {
 	switch provider {
 	case "google":
 		email := details[aboauth.OAuth2Email]
 
 		var user *model.User
-		if u, ok := m.Users[email]; ok {
+		if u, ok := storer.Users[email]; ok {
 			user = &u
 		} else {
 			user = &model.User{}
@@ -197,9 +200,9 @@ func (m MemStorer) NewFromOAuth2(_ context.Context, provider string, details map
 }
 
 // SaveOAuth2 user
-func (m MemStorer) SaveOAuth2(_ context.Context, user authboss.OAuth2User) error {
+func (storer MemStorer) SaveOAuth2(_ context.Context, user authboss.OAuth2User) error {
 	u := user.(*model.User)
-	m.Users[u.Email] = *u
+	storer.Users[u.Email] = *u
 
 	return nil
 }
