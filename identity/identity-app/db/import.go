@@ -11,8 +11,9 @@ import (
 
 // User data definition
 type ImportedUser struct {
-	Id       string `json:"id"`
+	Id       string `json:"_id"`
 	Name     string `json:"name"`
+	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
@@ -37,8 +38,10 @@ func Import(filename string, db authboss.CreatingServerStorer) {
 	for _, u := range users {
 		user := authboss.MustBeAuthable(db.New(context.Background()))
 
-		user.PutPID(u.Email)
+		user.PutPID(u.Username)
 		user.PutPassword(u.Password)
+		userRec := authboss.MustBeRecoverable(user)
+		userRec.PutEmail(u.Email)
 
 		if arbUser, ok := user.(authboss.ArbitraryUser); ok {
 			arbUser.PutArbitrary(map[string]string{

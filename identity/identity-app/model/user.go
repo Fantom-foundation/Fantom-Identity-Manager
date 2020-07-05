@@ -18,6 +18,7 @@ type User struct {
 	Name    string
 
 	// Auth
+	Username string
 	Email    string
 	Password string
 
@@ -69,7 +70,7 @@ var (
 )
 
 // PutPID into user
-func (u *User) PutPID(pid string) { u.Email = pid }
+func (u *User) PutPID(pid string) { u.Username = pid }
 
 // PutPassword into user
 func (u *User) PutPassword(password string) { u.Password = password }
@@ -139,7 +140,7 @@ func (u *User) PutArbitrary(values map[string]string) {
 }
 
 // GetPID from user
-func (u User) GetPID() string { return u.Email }
+func (u User) GetPID() string { return u.Username }
 
 // GetPassword from user
 func (u User) GetPassword() string { return u.Password }
