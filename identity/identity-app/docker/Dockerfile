@@ -2,6 +2,8 @@ FROM golang:1.13-alpine as builder
 
 WORKDIR /app
 
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.7.3/wait /wait
+
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 
@@ -18,5 +20,7 @@ COPY ab_views ab_views
 COPY static static
 COPY users.example.json .
 COPY --from=builder /tmp/app .
+COPY --from=builder /wait /wait
 
-ENTRYPOINT ["./app"]
+RUN chmod +x /wait
+CMD /wait && ./app

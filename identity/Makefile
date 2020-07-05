@@ -7,7 +7,7 @@
 
 # project related vars
 PROJECT := $(shell basename "$(PWD)")
-DOCKER_FILES := -f identity.yml
+DOCKER_FILES := -f identity.yml -f database.yml
 
 ## run: Run identity manager with example variables
 .PHONY: run

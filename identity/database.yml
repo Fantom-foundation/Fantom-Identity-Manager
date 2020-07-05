@@ -1,0 +1,30 @@
+version: '3.7'
+
+services:
+
+  identity:
+    depends_on:
+      - identity-mongodb
+    environment:
+      - DSN=mongodb://${DATABASE_USER}:${DATABASE_PASSWORD}@identity-mongodb:${DATABASE_PORT}/${DATABASE_DB}?authSource=admin
+      - WAIT_HOSTS=identity-mongodb:${DATABASE_PORT}
+
+  identity-mongodb:
+    image: mongo:4.2.8
+    ports:
+      - "${DATABASE_PORT}:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${DATABASE_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DATABASE_PASSWORD}
+      - MONGO_INITDB_DATABASE=${DATABASE_DB}
+    networks:
+      - intranet
+    volumes:
+      - identity_data:/data/db
+
+networks:
+  intranet:
+    name: fantom-identity
+
+volumes:
+  identity_data:
