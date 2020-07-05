@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/volatiletech/authboss"
 	"identity-app/config"
+	"identity-app/logging"
 	"sync"
 )
 
@@ -17,7 +18,7 @@ var (
 type StorerBase interface {
 	Close()
 	CanHandle(dsn string) bool
-	FromConfig(cfg *config.Config) (StorerBase, error)
+	FromConfig(cfg *config.Config, log *logging.Logger) (StorerBase, error)
 	authboss.ServerStorer
 }
 
@@ -27,16 +28,16 @@ func RegisterStorer(provider func() StorerBase) {
 	mtx.Unlock()
 }
 
-func LoadStorer(cfg *config.Config) StorerBase {
+func LoadStorer(cfg *config.Config, logger *logging.Logger) (StorerBase, error) {
 	storer, err := getCompatibleStorer(cfg.DSN)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	storer, err = storer.FromConfig(cfg)
+	storer, err = storer.FromConfig(cfg, logger)
 	if err != nil {
-		return nil
+		return nil, err
 	}
-	return storer
+	return storer, nil
 }
 
 func getCompatibleStorer(dsn string) (StorerBase, error) {

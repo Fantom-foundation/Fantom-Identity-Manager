@@ -104,7 +104,10 @@ func main() {
 	if hydra, err = login.NewHydra(cfg); err != nil {
 		log.Fatal(err)
 	}
-	storer := db.LoadStorer(cfg)
+	storer, err := db.LoadStorer(cfg, generalLogger)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Capture termination signals
 	setupSignals(storer, generalLogger)

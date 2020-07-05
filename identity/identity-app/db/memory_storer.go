@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"identity-app/config"
+	"identity-app/logging"
 	"identity-app/model"
 	"strings"
 
@@ -56,7 +57,7 @@ func (storer *MemStorer) CanHandle(dsn string) bool {
 	return scheme == memoryStorerIdentifier
 }
 
-func (storer *MemStorer) FromConfig(_ *config.Config) (StorerBase, error) {
+func (storer *MemStorer) FromConfig(_ *config.Config, _ *logging.Logger) (StorerBase, error) {
 	return storer, nil
 }
 
