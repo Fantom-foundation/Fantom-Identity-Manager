@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+
+  key-vault-server:
+    build:
+        context: key-vault-server
+        dockerfile: docker/Dockerfile
+    environment:
+      - HYDRA_ADMIN_URL=http://hydra:4445
+      - PORT=3030
+    ports:
+      - "3030:3030"
+    networks:
+      - intranet
+    restart: on-failure
+
+networks:
+  intranet:
+    external:
+      name: fantom-identity

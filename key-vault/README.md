@@ -5,4 +5,13 @@ private keys in custodial management, or for relay access to Fantom iKey, in a s
 for new and also senior Fantom users.
 
 The Key Vault is planed to include several channels for actual private key management, and realy access, including
-local secured key storage and remote Fantom iKey app.    
+local secured key storage and remote Fantom iKey app.
+
+## Usage example
+
+Run the server:
+```shell script
+make run
+```
+
+Connect to the graphql server playground: http://localhost:3030/.

@@ -1,0 +1,13 @@
+version: '3.7'
+
+services:
+
+  key-vault-server:
+    environment:
+      - DEBUG=1
+    ports:
+      - "40000:40000"
+    security_opt:
+      - "seccomp:unconfined"
+    cap_add:
+      - SYS_PTRACE
