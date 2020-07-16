@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"key-vault-server/config"
 	"net/http"
 	"strings"
 )
@@ -41,10 +42,10 @@ func ValidateTokenActive(_ *string) error {
 	return nil
 }
 
-func AuthenticationMiddleware() func(handler http.Handler) http.Handler {
+func AuthenticationMiddleware(cfg *config.Config) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == "/query" {
+			if r.URL.Path == cfg.GraphqlEntrypoint {
 				token, err := extractToken(r)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusForbidden)

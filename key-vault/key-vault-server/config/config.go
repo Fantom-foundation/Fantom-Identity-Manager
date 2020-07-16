@@ -9,6 +9,7 @@ const (
 	keyPort          = "net.port"
 	keyRootUrl       = "net.url"
 	keyHydraAdminUrl = "hydra.admin-url"
+	keyGraphqlPath   = "graphql.path"
 )
 
 // Master application configuration
@@ -19,6 +20,8 @@ type Config struct {
 	RootUrl string
 	// Entrypoint manged by hydra server to join to
 	HydraAdminUrl string
+	// Graphql entrypoint path
+	GraphqlEntrypoint string
 }
 
 func Load() (*Config, error) {
@@ -33,9 +36,10 @@ func Load() (*Config, error) {
 
 	// Build final configuration
 	return &Config{
-		Port:          cfgReader.GetString(keyPort),
-		RootUrl:       cfgReader.GetString(keyRootUrl),
-		HydraAdminUrl: cfgReader.GetString(keyHydraAdminUrl),
+		Port:              cfgReader.GetString(keyPort),
+		RootUrl:           cfgReader.GetString(keyRootUrl),
+		HydraAdminUrl:     cfgReader.GetString(keyHydraAdminUrl),
+		GraphqlEntrypoint: cfgReader.GetString(keyGraphqlPath),
 	}, nil
 }
 

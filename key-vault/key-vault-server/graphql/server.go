@@ -14,14 +14,14 @@ import (
 func StartServer(cfg *config.Config) {
 	router := chi.NewRouter()
 	// Setup user Authorization service
-	router.Use(auth.AuthenticationMiddleware())
+	router.Use(auth.AuthenticationMiddleware(cfg))
 
 	// Main GraphQl resolver
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &Resolver{}}))
 
 	// Define routes
-	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	router.Handle("/query", srv)
+	router.Handle("/", playground.Handler("GraphQL playground", cfg.GraphqlEntrypoint))
+	router.Handle(cfg.GraphqlEntrypoint, srv)
 
 	// Start server
 	log.Printf("connect to %s:%s/ for GraphQL playground", cfg.RootUrl, cfg.Port)
