@@ -7,11 +7,12 @@ import (
 	"key-vault-server/auth"
 	"key-vault-server/config"
 	"key-vault-server/graphql/generated"
+	"key-vault-server/logging"
 	"log"
 	"net/http"
 )
 
-func StartServer(cfg *config.Config) {
+func StartServer(cfg *config.Config, logger *logging.Logger) {
 	router := chi.NewRouter()
 	// Setup user Authorization service
 	router.Use(auth.AuthenticationMiddleware(cfg))

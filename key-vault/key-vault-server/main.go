@@ -3,6 +3,7 @@ package main
 import (
 	"key-vault-server/config"
 	"key-vault-server/graphql"
+	"key-vault-server/logging"
 	"log"
 )
 
@@ -17,5 +18,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	graphql.StartServer(cfg)
+	generalLogger := logging.NewLogger(cfg)
+
+	graphql.StartServer(cfg, generalLogger)
 }
