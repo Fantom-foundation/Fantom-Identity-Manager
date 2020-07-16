@@ -34,14 +34,6 @@ func extractToken(r *http.Request) (*string, error) {
 	}
 }
 
-func extractUserInfo(_ *string) (User, error) {
-	return User{}, nil
-}
-
-func ValidateTokenActive(_ *string) error {
-	return nil
-}
-
 func AuthenticationMiddleware(cfg *config.Config) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -51,18 +43,15 @@ func AuthenticationMiddleware(cfg *config.Config) func(handler http.Handler) htt
 					http.Error(w, err.Error(), http.StatusForbidden)
 					return
 				}
-				user, err := extractUserInfo(token)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusForbidden)
-					return
-				}
-				err = ValidateTokenActive(token)
+				userId, err := getUserId(cfg, token)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusForbidden)
 					return
 				}
 
 				// Store extracted values to context
+				user := User{}
+				user.Uuid = *userId
 				ctx := context.WithValue(r.Context(), userCtxKey, user)
 				// Next call
 				r = r.WithContext(ctx)
@@ -70,4 +59,9 @@ func AuthenticationMiddleware(cfg *config.Config) func(handler http.Handler) htt
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func GetUser(ctx context.Context) *User {
+	user, _ := ctx.Value(userCtxKey).(User)
+	return &user
 }
