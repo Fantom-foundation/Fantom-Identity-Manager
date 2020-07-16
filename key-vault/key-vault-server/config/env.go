@@ -10,6 +10,7 @@ func getParameterNameMapping() map[string]string {
 		"ROOT_URL":        keyRootUrl,
 		"HYDRA_ADMIN_URL": keyHydraAdminUrl,
 		"GRAPHQL_PATH":    keyGraphqlPath,
+		"DSN":             keyDsn,
 	}
 }
 

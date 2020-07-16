@@ -9,4 +9,5 @@ func setDefaults(cfg *viper.Viper) {
 	cfg.SetDefault(keyRootUrl, "http://localhost")
 	cfg.SetDefault(keyHydraAdminUrl, "http://localhosst:4445")
 	cfg.SetDefault(keyGraphqlPath, "/query")
+	cfg.SetDefault(keyDsn, "memory")
 }

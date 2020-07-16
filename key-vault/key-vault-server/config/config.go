@@ -10,6 +10,7 @@ const (
 	keyRootUrl       = "net.url"
 	keyHydraAdminUrl = "hydra.admin-url"
 	keyGraphqlPath   = "graphql.path"
+	keyDsn           = "dsn"
 )
 
 // Master application configuration
@@ -22,6 +23,8 @@ type Config struct {
 	HydraAdminUrl string
 	// Graphql entrypoint path
 	GraphqlEntrypoint string
+	// Store connection specification
+	DSN string
 }
 
 func Load() (*Config, error) {
@@ -40,6 +43,7 @@ func Load() (*Config, error) {
 		RootUrl:           cfgReader.GetString(keyRootUrl),
 		HydraAdminUrl:     cfgReader.GetString(keyHydraAdminUrl),
 		GraphqlEntrypoint: cfgReader.GetString(keyGraphqlPath),
+		DSN:               cfgReader.GetString(keyDsn),
 	}, nil
 }
 
