@@ -3,7 +3,7 @@ version: '3.7'
 services:
 
   hydra-migrate:
-    image: oryd/hydra:v1.5.1
+    image: oryd/hydra:v1.8.5
     command:
       migrate sql -e --yes
     restart: on-failure
@@ -11,7 +11,7 @@ services:
       - intranet
 
   hydra:
-    image: oryd/hydra:v1.5.1
+    image: oryd/hydra:v1.8.5
     ports:
       - "4444:4444" # Public port
       - "4445:4445" # Admin port
@@ -30,6 +30,8 @@ services:
       - SECRETS_SYSTEM=fantomIdentitySecret
       - OIDC_SUBJECT_IDENTIFIERS_SUPPORTED_TYPES=public,pairwise
       - OIDC_SUBJECT_IDENTIFIERS_PAIRWISE_SALT=fantomIdentitySalt
+      - LOG_LEAK_SENSITIVE_VALUES=true
+      - OAUTH2_EXPOSE_INTERNAL_ERRORS=true
     restart: unless-stopped
     networks:
       - intranet
