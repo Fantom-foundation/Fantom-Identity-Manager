@@ -20,7 +20,7 @@ register-client:
 	docker-compose $(DOCKER_FILES) exec hydra \
 		hydra clients create \
 		--skip-tls-verify \
-    	--endpoint http://127.0.0.1:4445/ \
+    	--endpoint http://hydra:4445/ \
 		--id ${CLIENT_ID} \
 		--secret ${CLIENT_SECRET} \
 		--grant-types authorization_code,refresh_token,client_credentials,implicit \
@@ -28,10 +28,22 @@ register-client:
 		--scope openid,offline \
 		--callbacks ${CLIENT_CALLBACKS}
 
+## get-token: Get Login token for registered client ${CLIENT_ID} with secret ${CLIENT_SECRET}
+.PHONY: get-token
+get-token:
+	docker-compose $(DOCKER_FILES) exec hydra \
+		hydra token user \
+    	--client-id ${CLIENT_ID} \
+    	--client-secret ${CLIENT_SECRET} \
+    	--endpoint http://127.0.0.1:4444/ \
+    	--port 5555 \
+		--scope openid,offline \
+		--skip-tls-verify
+
 ## clear: Clear persistent data
 .PHONY: clear
 clear:
-	docker-compose $(DOCKER_FILES) down -v
+	docker-compose $(DOCKER_FILES) down -v --remove-orphans
 
 all: help
 .PHONY: help

@@ -14,17 +14,11 @@ CLIENT_ID=keyvault CLIENT_SECRET=keyvault CLIENT_CALLBACKS="http://127.0.0.1:555
 
 ### Get access token for user
 ```shell script
-docker-compose -f openid.yml -f database.yml exec hydra \
-    hydra token user \
-    --client-id keyvault \
-    --client-secret keyvault \
-    --endpoint http://127.0.0.1:4444/ \
-    --port 5555 \
-    --scope openid,offline
+CLIENT_ID=keyvault CLIENT_SECRET=keyvault make get-token
 ``` 
 
 ### Find out if access token is still valid
 ```
-http://127.0.0.1:4445/oauth2/introspect
+http://hydra:4445/oauth2/introspect
 ```
 NOTE: Login using oauth2 with introspected token
